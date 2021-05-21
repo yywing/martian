@@ -41,6 +41,7 @@ type Config struct {
 	// permitted.
 	AllowedHostsFilter func(string) bool
 
+	InsecureSkipVerify bool
 	// RootCAs is the pool of CA certificates used by the MitM client to authenticate the server.
 	RootCAs *x509.CertPool
 
@@ -59,8 +60,9 @@ func (c *Config) Proxy(closing chan bool, cc io.ReadWriter, url *url.URL) error 
 		log.Infof("\u001b[1;35mProxying %v with HTTP/2\u001b[0m", url)
 	}
 	sc, err := tls.Dial("tcp", url.Host, &tls.Config{
-		RootCAs:    c.RootCAs,
-		NextProtos: []string{"h2"},
+		RootCAs:            c.RootCAs,
+		InsecureSkipVerify: c.InsecureSkipVerify,
+		NextProtos:         []string{"h2"},
 	})
 	if err != nil {
 		return fmt.Errorf("connecting h2 to %v: %w", url, err)
